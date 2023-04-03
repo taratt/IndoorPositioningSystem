@@ -12,25 +12,30 @@ void changeChannel(int channelNumber){
   BLEDevice::stopAdvertising();
   BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
   BLEAdvertisementData advertisingChannel = BLEAdvertisementData();
+  String payloadStr = "TT-";
   switch(channelNumber) {
   case 37:
     pAdvertising->setAdvertisementChannelMap(ADV_CHNL_37);
-    advertisingChannel.setName("37");
+    payloadStr = payloadStr + "37";
+    // advertisingChannel.addData("37");
     Serial.println("on 37");
     break;
 
   case 38:
     pAdvertising->setAdvertisementChannelMap(ADV_CHNL_38);
-    advertisingChannel.setName("38");
+    payloadStr = payloadStr + "38";
+    // advertisingChannel.addData("38");
     Serial.println("on 38");
 
     break;
   case 39:
     pAdvertising->setAdvertisementChannelMap(ADV_CHNL_39);
-    advertisingChannel.setName("39");
+    payloadStr = payloadStr + "39";
+    // advertisingChannel.addData("39");
     Serial.println("on 39");
 }
 
+  advertisingChannel.addData(payloadStr.c_str());
   pAdvertising->setAdvertisementData(advertisingChannel);
   BLEDevice::startAdvertising();
 
@@ -60,19 +65,19 @@ void setup() {
 
 //initializing the advertising channel to 37
   pAdvertising->setAdvertisementChannelMap(ADV_CHNL_37);
-
   BLEAdvertisementData advertisingChannel = BLEAdvertisementData();
-  advertisingChannel.setManufacturerData("37");
+  // advertisingChannel.setName(BEACON_NAME);
+  // advertisingChannel.setManufacturerData("1610");
+  advertisingChannel.addData("TT-37");
   pAdvertising->setAdvertisementData(advertisingChannel);
-  
   BLEDevice::startAdvertising();
 }
 
 void loop() {
   changeChannel(37);
-  delay(1000);
+  delay(2000);
   changeChannel(38);
-  delay(1000);
+  delay(2000);
   changeChannel(39);
-  delay(1000);
+  delay(2000);
 }

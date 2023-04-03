@@ -17,6 +17,7 @@ WiFiClient espClient;
 PubSubClient client(espClient);
 
 BLEScan* pBLEScan;
+// NimBLEScan* pBLEScan;
 
 void initWiFi() {
   const char* ssid = "Shanita2019";
@@ -28,7 +29,7 @@ void initWiFi() {
     Serial.print('.');
     delay(500);
   }
-  // Serial.println(WiFi.localIP());
+  Serial.println(WiFi.localIP());
 }
 
 void initMQTT() {
@@ -72,14 +73,23 @@ void MQTTcallback(char* topic, byte* message, unsigned int length) {
 
 class MyAdvertisedDeviceCallbacks: public BLEAdvertisedDeviceCallbacks {
     void onResult(BLEAdvertisedDevice *advertisedDevice) {
-      String fingerprintRecord = ""; 
-      if (advertisedDevice->haveName())
-        fingerprintRecord = String(advertisedDevice->getName().c_str() + '*' );
-      fingerprintRecord = String(fingerprintRecord + '*');
-      fingerprintRecord = String (fingerprintRecord + advertisedDevice->getRSSI());
-      client.publish("fingerprint",fingerprintRecord.c_str());
-      Serial.printf("Advertised Device: %s \n", advertisedDevice->toString().c_str());
-      Serial.printf(" RSSI: %d \n", advertisedDevice->getRSSI());
+// class MyAdvertisedDeviceCallbacks: public NimBLEAdvertisedDeviceCallbacks {
+//     void onResult(NimBLEAdvertisedDevice* advertisedDevice) {
+      if (String((char *) advertisedDevice->getPayload()).substring(0,2) == "TT"){
+        String fingerprintRecord = (char *)advertisedDevice->getPayload(); 
+        fingerprintRecord = String(fingerprintRecord + '*');
+        fingerprintRecord = String(fingerprintRecord +String(advertisedDevice->getRSSI()));
+        fingerprintRecord = String(fingerprintRecord +'*');
+        fingerprintRecord = String(fingerprintRecord + advertisedDevice->getAddress().toString().c_str());
+        Serial.println(fingerprintRecord);
+        
+        client.publish("fingerprint",fingerprintRecord.c_str());
+        // client.publish("fingerprint",(char *)advertisedDevice->getPayload());
+       Serial.printf(" RSSI: %d \n", advertisedDevice->getRSSI());
+       Serial.printf(" Payload: %s \n", advertisedDevice->getPayload());
+       Serial.println(advertisedDevice->toString().c_str());
+
+       }
     }
 };
 
@@ -88,20 +98,21 @@ void setup() {
   initWiFi();
   initMQTT();
   
-
+  BLEDevice::init("");  
   Serial.println(F("Scanning..."));
-  BLEDevice::init("");
   pBLEScan = BLEDevice::getScan(); //create new scan
   pBLEScan->setAdvertisedDeviceCallbacks(new MyAdvertisedDeviceCallbacks());
- // pBLEScan->setActiveScan(true); //active scan uses more power, but get results faster
+  // pBLEScan->setActiveScan(true); //active scan uses more power, but get results faster
   pBLEScan->setInterval(100);
   pBLEScan->setWindow(99);  // less or equal setInterval value
+  pBLEScan->setMaxResults(0);
 }
 
 void loop() {
-  BLEScanResults foundDevices = pBLEScan->start(5, false);
+
+  BLEScanResults foundDevices = pBLEScan->start(3, false);
   Serial.print(F("Devices found: "));
   Serial.println(F("Scan done!"));
   pBLEScan->clearResults();   // delete results fromBLEScan buffer to release memory
-  delay(2000);
+  delay(200);
 }
