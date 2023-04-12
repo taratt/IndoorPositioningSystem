@@ -48,6 +48,7 @@ void setup() {
 
 //creating the server
   BLEDevice::init(BEACON_NAME);
+  BLEDevice::setPower(ESP_PWR_LVL_P7,ESP_BLE_PWR_TYPE_ADV);
   BLEServer *pServer = BLEDevice::createServer();
 
 //creating the service
@@ -75,9 +76,9 @@ void setup() {
 
 void loop() {
   changeChannel(37);
-  delay(2000);
+  delay(500);
   changeChannel(38);
-  delay(2000);
+  delay(500);
   changeChannel(39);
-  delay(2000);
+  delay(500);
 }

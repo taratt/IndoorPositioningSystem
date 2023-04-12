@@ -20,8 +20,8 @@ BLEScan* pBLEScan;
 // NimBLEScan* pBLEScan;
 
 void initWiFi() {
-  const char* ssid = "Shanita2019";
-  const char* password =  "tobeornottobe2020";
+  const char* ssid = "Nokia 1";
+  const char* password =  "4e3877f587c6";
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
   Serial.print("Connecting to WiFi ..");
@@ -30,10 +30,11 @@ void initWiFi() {
     delay(500);
   }
   Serial.println(WiFi.localIP());
+  
 }
 
 void initMQTT() {
-  const char* mqtt_broker = "192.168.1.144";
+  const char* mqtt_broker = "192.168.43.245";
   const int mqtt_port = 1883;
 
   client.setServer(mqtt_broker, mqtt_port);
@@ -98,21 +99,32 @@ void setup() {
   initWiFi();
   initMQTT();
   
-  BLEDevice::init("");  
+  BLEDevice::init("");
+
   Serial.println(F("Scanning..."));
   pBLEScan = BLEDevice::getScan(); //create new scan
   pBLEScan->setAdvertisedDeviceCallbacks(new MyAdvertisedDeviceCallbacks());
   // pBLEScan->setActiveScan(true); //active scan uses more power, but get results faster
-  pBLEScan->setInterval(100);
-  pBLEScan->setWindow(99);  // less or equal setInterval value
+  pBLEScan->setInterval(50);
+  pBLEScan->setWindow(49);  // less or equal setInterval value
   pBLEScan->setMaxResults(0);
 }
-
+int counter = 1;
 void loop() {
+ 
+      BLEScanResults foundDevices = pBLEScan->start(4, false);
+      Serial.print(F("Devices found: "));
+      Serial.println(F("Scan done!"));
 
-  BLEScanResults foundDevices = pBLEScan->start(3, false);
-  Serial.print(F("Devices found: "));
-  Serial.println(F("Scan done!"));
-  pBLEScan->clearResults();   // delete results fromBLEScan buffer to release memory
-  delay(200);
+      pBLEScan->clearResults();   // delete results fromBLEScan buffer to release memory
+      delay(2000);
+      client.publish("scanFinished","T");
+      counter++;
+      if (counter == 21){
+        delay(2000);
+        client.publish("scanFinished","L");
+        counter = 1;
+        delay(20000);
+      }
+
 }
